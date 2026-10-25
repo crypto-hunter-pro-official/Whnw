@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet Hunter — Simulated Key-Scanner Console</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f7a600'/><text x='16' y='22' font-size='16' font-weight='bold' text-anchor='middle' font-family='Arial' fill='%23111'>W</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<!-- V2 design refresh skin -->
+
+</head>
+<body class="gate-on">
+
+<!-- ================= Offline gate: app closed without internet ================= -->
+<div class="off-gate" id="offlineGate" style="display:none" role="alertdialog" aria-modal="true" aria-label="You are offline">
+  <div class="off-card">
+    <div class="off-ic">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M8.5 16.4a5 5 0 0 1 7 0"/><path d="M5 12.86a10 10 0 0 1 5.17-2.69"/><path d="M19 12.86a10 10 0 0 0-2.007-1.523"/><path d="M2 8.82a15 15 0 0 1 4.177-2.643"/><path d="M22 8.82a15 15 0 0 0-11.288-3.764"/><path d="m2 2 20 20"/></svg>
+    </div>
+    <h1>You&rsquo;re Offline</h1>
+    <p class="off-msg">Wallet Hunter only works with an internet connection.<br>Please go online to continue.</p>
+    <div class="off-state"><span class="off-dot"></span><span id="offStateText">Waiting for connection&hellip;</span></div>
+    <button class="btn btn-primary off-retry" id="offRetry">Retry Now</button>
+    <div class="off-note">Check your Wi-Fi or mobile data and tap Retry &mdash; the console reopens automatically as soon as you are back online.</div>
+  </div>
+</div>
+
+<!-- ================= Access gate (key login) ================= -->
+<div class="lg-gate" id="loginGate">
+  <div class="lg-card">
+    <div class="lg-logo">W</div>
+    <h1>Wallet<b>Hunter</b></h1>
+    <div class="lg-sub">Restricted access &mdash; enter your access key to reach the hunter console.</div>
+    <label class="lg-label" for="lgKey">Access Key</label>
+    <input class="lg-input" id="lgKey" type="text" placeholder="Enter your access key" spellcheck="false" autocomplete="off" autocapitalize="off" maxlength="128">
+    <div class="lg-err" id="lgErr"></div>
+    <div class="lg-prepare" id="lgPrepare">
+      <div class="ld-spin"></div>
+      <div class="lg-prepare-t">System is preparing&hellip;</div>
+      <div class="lg-prepare-s">Verifying your key and unlocking the console</div>
+    </div>
+    <button class="btn btn-primary lg-btn" id="lgBtn">Unlock Console</button>
+    <button class="btn lg-alt" id="lgPlansBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:7px"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>Get Access Key &mdash; from <span id="lgFrom">$0.99</span></button>
+    <div class="lg-alt-hint">No key yet? Buy an access plan &mdash; pay with USDT (BEP-20), key delivered by email.</div>
+    <div class="lg-note">REFUND GUARANTEE: We offer a refund process within 7 days after the period ends. Please note that this is strictly available for users whose wallets have not been funded.<br>Need a key? Message us on Telegram &mdash; <a href="https://t.me/Wallet_Hunter_Support" target="_blank" rel="noopener"><b>@Wallet_Hunter_Support</b></a></div>
+    <div class="lg-badge"><i></i><span id="lgState">AWAITING KEY</span></div>
+  </div>
+</div>
+
+<!-- ================= Floating Telegram contact (all access pages) ================= -->
+<div class="tg-contact" id="tgContact" title="Contact us on Telegram &mdash; @Wallet_Hunter_Support">
+  <span class="tg-label">Contact us &mdash; @Wallet_Hunter_Support</span>
+  <span class="tg-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></span>
+</div>
+
+<!-- ================= Plans page ================= -->
+<div class="pl-gate" id="plansPage" style="display:none">
+  <div class="pl-wrap">
+    <div class="pl-top">
+      <button class="btn btn-ghost pl-back" id="plansBack">&larr; Back</button>
+      <div class="pl-brand"><span class="logo-mark">W</span>Wallet<b>Hunter</b></div>
+    </div>
+    <h1 class="pl-title">Choose Your Access Plan</h1>
+    <p class="pl-sub">Pick a plan, pay with USDT (BEP-20), and your access key is delivered to your email within one hour.</p>
+    <div class="pl-grid" id="plGrid">
+      <!-- Plan cards are rendered by buildOffers() from the OFFERS list in the script -->
+    </div>
+    <div class="pl-note">Payments are made in USDT on the BNB Smart Chain (BEP-20).<br>After paying, submit your email and payment screenshot on the next page &mdash; your key arrives by email within one hour.</div>
+  </div>
+</div>
+
+<!-- ================= Payment page ================= -->
+<div class="py-gate" id="payPage" style="display:none">
+  <div class="py-wrap">
+    <div class="pl-top">
+      <button class="btn btn-ghost pl-back" id="payBack">&larr; Plans</button>
+      <div class="pl-brand"><span class="logo-mark">W</span>Wallet<b>Hunter</b></div>
+    </div>
+    <h1 class="pl-title" id="payTitle">Complete Your Payment</h1>
+    <p class="pl-sub">Send the exact amount in USDT (BEP-20) to the address below, then submit your details so we can deliver your key.</p>
+    <div class="py-grid">
+      <div class="py-card">
+        <div class="py-h">Order Summary</div>
+        <div class="py-plan" id="pyPlanName">&mdash;</div>
+        <div class="py-price" id="pyPlanPrice">&mdash;</div>
+        <div class="py-det"><span>Duration</span><b id="pyPlanDur">&mdash;</b></div>
+        <div class="py-det"><span>Delivery</span><b>Access key by email</b></div>
+        <div class="py-det"><span>Delivery time</span><b>Within 1 hour of payment</b></div>
+        <div class="py-det"><span>Support</span><b>Telegram &mdash; @Wallet_Hunter_Support</b></div>
+      </div>
+      <div class="py-card">
+        <div class="py-h">Payment Details</div>
+        <label class="py-lbl" for="pyPromo">Promo code (optional)</label>
+        <div class="py-promo-row">
+          <input class="py-input" id="pyPromo" type="text" placeholder="Enter promo code" spellcheck="false" autocomplete="off" autocapitalize="characters" maxlength="16">
+          <button class="py-promo-btn" id="pyPromoBtn" type="button">Apply</button>
+        </div>
+        <div class="py-promo-msg" id="pyPromoMsg"></div>
+        <div class="py-amt-row"><span>Send exact amount</span><b id="pyAmt">&mdash;</b></div>
+        <div class="py-net">Network: <b>BNB Smart Chain (BEP-20)</b><br><span>Send only USDT on BEP-20 to this address &mdash; other tokens or networks cannot be recovered. Funds go to our campus organization.</span></div>
+        <div class="py-addr" id="pyAddr" title="Click to copy the wallet address">0x4e8fE4Cd73f906Ec351f919baB8e2A53c1a2387C<span class="py-copyic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span></div>
+        <div class="py-copied" id="pyCopied">&#10003; Copied to clipboard</div>
+        <div class="py-hint">Tap the address to copy it</div>
+      </div>
+      <div class="py-card">
+        <div class="py-h">Your Details</div>
+        <label class="py-lbl" for="pyEmail">Email address for key delivery</label>
+        <input class="py-input" id="pyEmail" type="email" placeholder="you@example.com" spellcheck="false" autocomplete="email" maxlength="120">
+        <div class="py-err" id="pyEmailErr">Enter a valid email address &mdash; your access key will be sent there.</div>
+        <label class="py-lbl" for="pyFile">Proof of payment</label>
+        <label class="py-file" for="pyFile">Upload payment screenshot<small>PNG or JPG of your USDT transfer confirmation</small></label>
+        <input type="file" id="pyFile" accept="image/*" style="display:none">
+        <div class="py-fname" id="pyFname"></div>
+        <div class="py-err" id="pyFileErr">Please attach a screenshot of your payment as proof.</div>
+        <button class="btn btn-primary py-submit" id="pySubmit">Submit Order</button>
+        <div class="py-note">Your order is sent to our team instantly. Keep the screenshot until your key arrives &mdash; usually within one hour.</div>
+      </div>
+    </div>
+    <div class="py-success" id="pySuccess">
+      <svg class="py-check" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26"/><path d="M21 33l8 8 15-17"/></svg>
+      <h2>Order Submitted Successfully</h2>
+      <p>Your access key will be sent to <b id="pySuccEmail"></b> within one hour after your payment is confirmed.</p>
+      <p class="py-small">Keep your payment screenshot until the key arrives.<br>Questions? Tap the Telegram button below &mdash; we usually reply within minutes.</p>
+      <button class="btn btn-ghost" id="pyDone">Back to Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= Page transition loading ================= -->
+<div class="ld-gate" id="pageLoading" style="display:none">
+  <div class="ld-spin"></div>
+  <div class="ld-text" id="ldText">Preparing your order&hellip;</div>
+</div>
+
+<header class="topbar">
+  <div class="logo"><span class="logo-mark">W</span><span>Wallet<b>Hunter</b></span></div>
+  <nav class="nav">
+    <a href="#">Markets</a>
+    <a href="#" class="active">Wallet Hunter</a>
+    <a href="#">Derivatives</a>
+    <a href="#">Assets</a>
+    <a href="#">Earn</a>
+  </nav>
+  <div class="top-right">
+    <div class="acct-chip"><span class="lbl">DEMO BALANCE (USD)</span><span class="val">$12,480.55</span></div>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="panel hunter-panel">
+    <div class="panel-head">
+      <div>
+        <h1>
+        <div class="sub"></div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="lbl"><svg class="lbl-ic" viewBox="0 0 24 24" fill="none" stroke="#f7a600" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r=".5" fill="#f7a600"/></svg>Keys Checked</div>
+        <div class="val" id="keysChecked">0</div>
+        <span class="badge" id="statusBadge" title="Scanner status"><span class="dot"></span><span id="statusText">IDLE</span></span>
+      </div>
+      <div class="stat">
+        <div class="lbl"><svg class="lbl-ic" viewBox="0 0 24 24" fill="none" stroke="#61afef" stroke-width="2.4" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Scan Rate</div>
+        <div class="val" id="scanRate">0<span class="unit">keys/s</span></div>
+        <div class="scan-coins" id="scanCoins"></div>
+      </div>
+      <div class="stat"><div class="lbl"><svg class="lbl-ic" viewBox="0 0 24 24" fill="none" stroke="#20b26c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>Wallets Found</div><div class="val accent" id="foundStat">0</div></div>
+      <div class="stat">
+        <div class="lbl"><svg class="lbl-ic" viewBox="0 0 24 24" fill="none" stroke="#b48ef7" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="#b48ef7" stroke="none"/></svg>Target Coins</div>
+        <div class="coin-picks" id="coinPicks"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="mainBtn">Start Search</button>
+      <button class="btn btn-ghost" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="console" id="console">
+      <div class="line sys">[system] Press "Start Search" to begin generating synthetic keys.</div>
+    </div>
+  </section>
+
+  <aside class="sidebar">
+    <section class="panel side-panel" id="foundPanel">
+      <div class="side-head"><h2><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f7a600" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px rgba(247,166,0,.55))"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>Wallets Found</h2></div>
+      <div class="wd-bar">
+        <div class="wd-info" title="Total USDT value of found wallets">
+          <span class="wd-lbl">Total</span>
+          <span class="wd-amt" id="wdTotal">0.00</span>
+          <span class="wd-unit">USDT</span>
+          <span class="wd-div"></span>
+          <span class="wd-lbl" title="Wallets matched this session">Found</span>
+          <span class="wd-count" id="foundCount">0</span>
+        </div>
+        <button class="wd-btn" id="wdBtn" disabled title="Find at least one wallet first">Withdraw</button>
+      </div>
+      <div class="tgt-row" style="display:none">
+        <span class="wd-lbl">Target</span>
+        <input class="tgt-input" id="tgtInput" type="number" min="0" step="any" placeholder="Set target amount (USD)" title="Set a USD target — progress updates as wallets are found">
+        <span class="tgt-stat" id="tgtStat"></span>
+      </div>
+      <div class="found-list" id="foundList">
+        <div class="empty">No wallets found yet.<br>Start the search — matches appear here.</div>
+      </div>
+    </section>
+
+    <section class="panel side-panel">
+      <div class="side-head">
+        <h2><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#20b26c" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px rgba(32,178,108,.55))"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Live Prices</h2>
+        <span class="src sim" id="srcBadge"><span id="srcText">CONNECTING</span></span>
+      </div>
+      <div id="priceList"></div>
+    </section>
+  </aside>
+</main>
+
+<div class="wd-overlay" id="wdOverlay">
+  <div class="wd-modal" role="dialog" aria-modal="true" aria-label="Withdraw">
+    <button class="wd-x" id="wdClose" title="Close">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg>
+    </button>
+
+    <div id="wdStepForm">
+      <div class="wd-ic">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#f7a600" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H5"/><circle cx="16" cy="13.5" r="1.1" fill="#f7a600" stroke="none"/></svg>
+      </div>
+      <h3>Withdraw Funds</h3>
+      <div class="wd-sub">Send the combined value of this session's found wallets to your own wallet.</div>
+      <div class="wd-row"><span>Amount to withdraw</span><b id="wdAvail">0.00 USDT</b></div>
+      <label class="wd-lbl2" for="wdInput">Your USDT BEP-20 wallet address</label>
+      <input class="wd-input" id="wdInput" type="text" placeholder="0x &hellip;" spellcheck="false" autocomplete="off" maxlength="42">
+      <div class="wd-err" id="wdErr">That doesn't look like a BEP-20 address &mdash; it must start with 0x followed by 40 hexadecimal characters.</div>
+      <button class="btn btn-primary wd-confirm" id="wdConfirm">Initiate Withdrawal</button>
+      <div class="wd-note">Simulation only &mdash; nothing is broadcast on-chain and the address you type never leaves this page.</div>
+    </div>
+
+    <div id="wdStepProc" style="display:none">
+      <div class="wd-spin"></div>
+      <h3>Processing Withdrawal</h3>
+      <div class="wd-prog"><i id="wdProgFill"></i></div>
+      <div class="wd-proc-step" id="wdProcStep">Connecting to BNB Chain&hellip;</div>
+      <div class="wd-dets">
+        <div class="wd-det"><span>Amount</span><b id="wdAmt">0.00 USDT</b></div>
+        <div class="wd-det"><span>Network</span><b>BNB Smart Chain (BEP-20)</b></div>
+        <div class="wd-det"><span>To</span><b id="wdAddr"></b></div>
+      </div>
+    </div>
+
+    <div id="wdStepDone" style="display:none">
+      <svg class="wd-check" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26"/><path d="M21 33l8 8 15-17"/></svg>
+      <h3 class="ok">Withdrawal Successful</h3>
+      <div class="wd-sub">The simulated funds were sent to your wallet.</div>
+      <div class="wd-dets">
+        <div class="wd-det"><span>Amount</span><b id="wdAmtDone">0.00 USDT</b></div>
+        <div class="wd-det"><span>To</span><b id="wdAddrDone"></b></div>
+        <div class="wd-det"><span>TxID</span><b id="wdTx"></b></div>
+      </div>
+      <button class="btn btn-primary wd-done-btn" id="wdDone">Done</button>
+      <div class="wd-note">Simulation only &mdash; no real funds were moved.</div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
