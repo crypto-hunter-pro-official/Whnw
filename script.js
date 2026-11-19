@@ -815,7 +815,7 @@ const BOT_CHAT   = '8963801021';
                       checkout field takes a further PROMO_EXTRA_OFF percent
                       off the (already discounted) price.
 ==================================================================== */
-const OFFER_DISCOUNT = 0.87;    /* 1 = original price | 0.87= 70% off */
+const OFFER_DISCOUNT = 1.0;    /* 1 = original price | 1.0= 70% off */
 const PROMO_EXTRA_OFF = 0.10;  /* extra 10% off with a valid promo code */
 
 const OFFERS = [
